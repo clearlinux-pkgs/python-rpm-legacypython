@@ -1,0 +1,65 @@
+From cea24ed1c6f65d2100daaaa86de381919695604f Mon Sep 17 00:00:00 2001
+From: William Douglas <william.douglas@intel.com>
+Date: Tue, 7 May 2013 12:57:42 -0700
+Subject: [PATCH 6/7] Fix 32bit kernel builds by not using eu-strip
+
+Right now 32bit kernel builds are failing because eu-strip is not
+performing safe operations. In order to work around this, use objdump
+as before when running a kernel build (by checking for a Kconfig file
+in the BUILDIR).
+
+Change-Id: I8c24eaab9e0ac1dfe21484522ce4e415d21fcb14
+Signed-off-by: William Douglas <william.douglas@intel.com>
+---
+ scripts/find-debuginfo.sh | 34 +++++++++++++++++++++++++++++-----
+ 1 file changed, 29 insertions(+), 5 deletions(-)
+
+diff --git a/scripts/find-debuginfo.sh b/scripts/find-debuginfo.sh
+index a2a33d1..6ae6ac9 100644
+--- a/scripts/find-debuginfo.sh
++++ b/scripts/find-debuginfo.sh
+@@ -258,12 +258,36 @@ while read nlinks inum f; do
+   esac
+ 
+   mkdir -p "${debugdn}"
+-  if test -w "$f"; then
+-    strip_to_debug "${debugfn}" "$f"
++  if [ -e "${BUILDDIR}/Kconfig" ] ; then
++      mode=$(stat -c %a "$f")
++      chmod +w "$f"
++      objcopy --only-keep-debug $f $debugfn || :
++      (
++	  shopt -s extglob
++	  strip_option="--strip-all"
++	  case "$f" in
++	      *.ko)
++		  strip_option="--strip-debug" ;;
++	      *$STRIP_KEEP_SYMTAB*)
++		  if test -n "$STRIP_KEEP_SYMTAB"; then
++		      strip_option="--strip-debug"
++		  fi
++		  ;;
++	  esac
++	  if test "$NO_DEBUGINFO_STRIP_DEBUG" = true ; then
++	      strip_option=
++	  fi
++	  objcopy --add-gnu-debuglink=$debugfn -R .comment -R .GCC.command.line $strip_option $f
++	  chmod $mode $f
++      ) || :
+   else
+-    chmod u+w "$f"
+-    strip_to_debug "${debugfn}" "$f"
+-    chmod u-w "$f"
++      if test -w "$f"; then
++	  strip_to_debug "${debugfn}" "$f"
++      else
++	  chmod u+w "$f"
++	  strip_to_debug "${debugfn}" "$f"
++	  chmod u-w "$f"
++      fi
+   fi
+ 
+   if [ -n "$id" ]; then
+-- 
+1.9.1
+

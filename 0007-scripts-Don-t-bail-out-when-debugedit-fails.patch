@@ -1,0 +1,32 @@
+From 59924ce5590ff606f56f27827fa492f7d8327b8a Mon Sep 17 00:00:00 2001
+From: Ikey Doherty <michael.i.doherty@intel.com>
+Date: Thu, 26 Jun 2014 15:13:32 +0100
+Subject: [PATCH 7/7] scripts: Don't bail out when debugedit fails
+
+In certain instances debugedit might just fail, and there is nothing we can
+really do about it due to each individual package altering CFLAGS, LDFLAGs,
+etc. Now we'll just gracefully continue to the next file in the list if
+this happens, and leave the packager to continue with other issues
+if needed.
+
+Signed-off-by: Ikey Doherty <michael.i.doherty@intel.com>
+---
+ scripts/find-debuginfo.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/scripts/find-debuginfo.sh b/scripts/find-debuginfo.sh
+index 6ae6ac9..1743134 100644
+--- a/scripts/find-debuginfo.sh
++++ b/scripts/find-debuginfo.sh
+@@ -238,7 +238,7 @@ while read nlinks inum f; do
+ 
+   echo "extracting debug info from $f"
+   id=$(/usr/lib/rpm/debugedit -b "$RPM_BUILD_DIR" -d /usr/src/debug \
+-			      -i -l "$SOURCEFILE" "$f") || exit
++			      -i -l "$SOURCEFILE" "$f") || continue
+   if [ $nlinks -gt 1 ]; then
+     eval linkedid_$inum=\$id
+   fi
+-- 
+1.9.1
+

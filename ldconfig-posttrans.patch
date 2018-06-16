@@ -1,0 +1,67 @@
+Subject: Run ldconfig at the end of each transaction.
+===================================================================
+Index: rpm-4.12.0.1/plugins/ldconfig.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ rpm-4.12.0.1/plugins/ldconfig.c	2015-03-10 10:47:59.588887300 +0000
+@@ -0,0 +1,36 @@
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <rpm/rpmlog.h>
++#include <rpm/rpmts.h>
++#include "lib/rpmplugin.h"
++
++static rpmRC ldconfig_tsm_post(rpmPlugin plugin, rpmts ts, int res)
++{
++    int pid = -1;
++    siginfo_t info;
++    do {
++	pid = fork ();
++    } while (pid < 0);
++
++    if (pid) {
++	info.si_code = 0;
++	info.si_status = 0;
++
++	if (waitid (P_PID, pid, &info, WEXITED)) {
++	    rpmlog(RPMLOG_DEBUG, "Failed to wait for ldconfig\n");
++	}
++
++	if (info.si_code != CLD_EXITED || info.si_status) {
++	    rpmlog(RPMLOG_DEBUG, "Bad ldconfig exit code %i and status %i\n", info.si_code, info.si_status);
++	}
++
++    } else {
++	execlp ("ldconfig", "ldconfig", (char *)NULL);
++    }
++
++    return RPMRC_OK;
++}
++
++struct rpmPluginHooks_s ldconfig_hooks = {
++    .tsm_post = ldconfig_tsm_post,
++};
+Index: rpm-4.12.0.1/plugins/Makefile.am
+===================================================================
+--- rpm-4.12.0.1.orig/plugins/Makefile.am	2015-03-10 10:18:29.219860785 +0000
++++ rpm-4.12.0.1/plugins/Makefile.am	2015-03-10 10:16:08.663856615 +0000
+@@ -31,3 +31,7 @@
+ syslog_la_SOURCES = syslog.c
+ syslog_la_LIBADD = $(top_builddir)/lib/librpm.la $(top_builddir)/rpmio/librpmio.la
+ plugins_LTLIBRARIES += syslog.la
++
++ldconfig_la_SOURCES = ldconfig.c
++ldconfig_la_LIBADD = $(top_builddir)/lib/librpm.la $(top_builddir)/rpmio/librpmio.la
++plugins_LTLIBRARIES += ldconfig.la
+Index: rpm-4.12.0.1/macros.in
+===================================================================
+--- rpm-4.12.0.1.orig/macros.in	2014-06-30 09:47:13.985503562 +0100
++++ rpm-4.12.0.1/macros.in	2015-03-10 10:37:53.576869323 +0000
+@@ -1040,6 +1040,7 @@
+ %__transaction_systemd_inhibit	%{__plugindir}/systemd_inhibit.so
+ %__transaction_selinux		%{__plugindir}/selinux.so
+ %__transaction_syslog		%{__plugindir}/syslog.so
++%__transaction_ldconfig		%{__plugindir}/ldconfig.so
+ 
+ #------------------------------------------------------------------------------
+ # Macros for further automated spec %setup and patch application

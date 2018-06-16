@@ -1,0 +1,11 @@
+--- rpm-4.12.0.1/lib/backend/db3.c~	2014-06-30 08:47:13.000000000 +0000
++++ rpm-4.12.0.1/lib/backend/db3.c	2017-04-11 00:57:58.042115729 +0000
+@@ -302,6 +302,8 @@
+     DB * db = dbi->dbi_db;
+     int rc = 0;
+ 
++    return rc;
++
+     if (db != NULL && !dbi->dbi_no_dbsync) {
+ 	rc = db->sync(db, flags);
+ 	rc = cvtdberr(dbi, "db->sync", rc, _debug);

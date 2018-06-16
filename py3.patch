@@ -1,0 +1,11 @@
+--- rpm-4.12.0.1/configure.ac~	2014-09-18 11:00:08.000000000 +0000
++++ rpm-4.12.0.1/configure.ac	2017-01-13 16:31:03.581872664 +0000
+@@ -578,7 +578,7 @@
+       ])
+     CPPFLAGS="$save_CPPFLAGS"
+     save_LIBS="$LIBS"
+-    AC_SEARCH_LIBS([Py_Main],[python${PYTHON_VERSION} python],[
++    AC_SEARCH_LIBS([Py_Main],[python${PYTHON_VERSION} python3 python3.6m python],[
+       WITH_PYTHON_LIB="$ac_res"
+     ],[AC_MSG_ERROR([missing python library])
+     ])

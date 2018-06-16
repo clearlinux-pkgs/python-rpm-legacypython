@@ -1,0 +1,91 @@
+--- rpm-4.12.0.1/scripts/find-debuginfo.sh~	2014-06-30 08:47:14.000000000 +0000
++++ rpm-4.12.0.1/scripts/find-debuginfo.sh	2017-01-14 03:12:35.163513956 +0000
+@@ -101,7 +101,7 @@
+   $strip_g && case "$(file -bi "$2")" in
+   application/x-sharedlib*) g=-g ;;
+   esac
+-  eu-strip --remove-comment $r $g -f "$1" "$2" || exit
++  eu-strip -p --remove-comment $r $g -f "$1" "$2" || exit
+   chmod 444 "$1" || exit
+ }
+ 
+--- rpm-4.12.0.1/scripts/brp-strip~	2014-06-30 08:47:14.000000000 +0000
++++ rpm-4.12.0.1/scripts/brp-strip	2017-01-14 03:20:21.031445806 +0000
+@@ -16,5 +16,5 @@
+         grep -v "^${RPM_BUILD_ROOT}/\?usr/lib/debug"  | \
+ 	grep -v ' shared object,' | \
+ 	sed -n -e 's/^\(.*\):[ 	]*ELF.*, not stripped/\1/p'`; do
+-	$STRIP -g "$f" || :
++	$STRIP -p -g "$f" || :
+ done
+--- rpm-4.12.0.1/scripts/brp-strip-comment-note~	2014-06-30 08:47:14.000000000 +0000
++++ rpm-4.12.0.1/scripts/brp-strip-comment-note	2017-01-14 03:20:23.071423616 +0000
+@@ -22,5 +22,5 @@
+ 		grep ALLOC >/dev/null; then
+ 		note=
+ 	fi
+-	$STRIP -R .comment $note "$f" || :
++	$STRIP -p -R .comment $note "$f" || :
+ done
+--- rpm-4.12.0.1/scripts/brp-strip-shared~	2014-06-30 08:47:14.000000000 +0000
++++ rpm-4.12.0.1/scripts/brp-strip-shared	2017-01-14 03:20:25.450397730 +0000
+@@ -21,5 +21,5 @@
+         grep -v "^${RPM_BUILD_ROOT}/\?usr/lib/debug"  | \
+ 	grep ' shared object,' | \
+ 	sed -n -e 's/^\(.*\):[ 	]*ELF.*, not stripped/\1/p'`; do
+-	$STRIP --strip-unneeded "$f"
++	$STRIP -p --strip-unneeded "$f"
+ done
+--- rpm-4.12.0.1/scripts/brp-strip-static-archive~	2014-06-30 08:47:14.000000000 +0000
++++ rpm-4.12.0.1/scripts/brp-strip-static-archive	2017-01-14 03:20:27.955370478 +0000
+@@ -16,5 +16,5 @@
+         grep -v "^${RPM_BUILD_ROOT}/\?usr/lib/debug"  | \
+ 	grep 'current ar archive' | \
+ 	sed -n -e 's/^\(.*\):[ 	]*current ar archive/\1/p'`; do
+-	$STRIP -g "$f"
++	$STRIP -p -g "$f"
+ done
+commit b8a54d6a1e9bb6140b6b47e23dc707e4b967537e
+Author: Nicolas Vigier <boklm@torproject.org>
+Date:   Thu Dec 3 12:57:22 2015 +0100
+
+    Allow SOURCE_DATE_EPOCH to override RPMTAG_BUILDTIME
+    
+    SOURCE_DATE_EPOCH environment variable is a distribution-agnostic
+    standard for build systems to exchange a timestamp.
+    
+    SOURCE_DATE_EPOCH specification is available at:
+    https://reproducible-builds.org/specs/source-date-epoch
+    
+    Signed-off-by: Dhiru Kholia <dhiru@openwall.com>
+
+diff --git a/build/pack.c b/build/pack.c
+index bfb4c73bb..f9fb3a05d 100644
+--- a/build/pack.c
++++ b/build/pack.c
+@@ -154,9 +154,23 @@ exit:
+ static rpm_time_t * getBuildTime(void)
+ {
+     static rpm_time_t buildTime[1];
++    char *srcdate;
++    time_t epoch;
++    char *endptr;
++
++    if (buildTime[0] == 0) {
++        srcdate = getenv("SOURCE_DATE_EPOCH");
++        if (srcdate) {
++            errno = 0;
++            epoch = strtol(srcdate, &endptr, 10);
++            if (srcdate == endptr || *endptr || errno != 0)
++                rpmlog(RPMLOG_ERR, _("unable to parse SOURCE_DATE_EPOCH\n"));
++            else
++                buildTime[0] = (int32_t) epoch;
++        } else
++            buildTime[0] = (int32_t) 0;
++    }
+ 
+-    if (buildTime[0] == 0)
+-	buildTime[0] = (int32_t) time(NULL);
+     return buildTime;
+ }
+ 

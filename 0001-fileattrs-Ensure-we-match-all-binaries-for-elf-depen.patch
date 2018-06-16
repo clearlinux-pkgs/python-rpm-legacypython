@@ -1,0 +1,23 @@
+From d9e5568e5f3439d617c3e04ef1c025f930810a5e Mon Sep 17 00:00:00 2001
+From: Michael Ikey Doherty <michael.i.doherty@intel.com>
+Date: Tue, 11 Nov 2014 14:33:40 +0000
+Subject: [PATCH] fileattrs: Ensure we match all binaries for elf dependencies
+
+Signed-off-by: Michael Ikey Doherty <michael.i.doherty@intel.com>
+---
+ fileattrs/elf.attr | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fileattrs/elf.attr b/fileattrs/elf.attr
+index 595b33e..060ddc0 100644
+--- a/fileattrs/elf.attr
++++ b/fileattrs/elf.attr
+@@ -1,4 +1,4 @@
+ %__elf_provides		%{_rpmconfigdir}/elfdeps --provides %{?__filter_GLIBC_PRIVATE:--filter-private}
+ %__elf_requires		%{_rpmconfigdir}/elfdeps --requires %{?__filter_GLIBC_PRIVATE:--filter-private}
+-%__elf_magic		^(setuid )?(setgid )?(sticky )?ELF (32|64)-bit.*$
++%__elf_magic		ELF (32|64)-bit.*$
+ %__elf_flags		exeonly
+-- 
+1.9.1
+

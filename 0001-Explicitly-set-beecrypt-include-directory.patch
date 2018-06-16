@@ -1,0 +1,25 @@
+From 9423c9080caa74597b623a93d4f70caf065b4f45 Mon Sep 17 00:00:00 2001
+From: Michael Ikey Doherty <michael.i.doherty@intel.com>
+Date: Wed, 9 Apr 2014 12:48:41 +0100
+Subject: [PATCH 1/7] Explicitly set beecrypt include directory
+
+Signed-off-by: Michael Ikey Doherty <michael.i.doherty@intel.com>
+---
+ configure.ac | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/configure.ac b/configure.ac
+index bb368a9..8a7f317 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -269,6 +269,7 @@ if test "$with_beecrypt" = yes ; then
+     ])
+   fi
+ fi
++WITH_BEECRYPT_INCLUDE="-I /usr/include/beecrypt"
+ AC_SUBST(WITH_BEECRYPT_LIB)
+ AC_SUBST(WITH_BEECRYPT_INCLUDE)
+ 
+-- 
+1.9.1
+

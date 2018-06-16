@@ -1,0 +1,32 @@
+--- rpm-4.9.1.3/scripts/find-debuginfo.sh~	2012-04-03 06:54:11.000000000 -0700
++++ rpm-4.9.1.3/scripts/find-debuginfo.sh	2012-12-31 11:03:27.981049047 -0800
+@@ -164,7 +164,6 @@
+     echo >&2 "*** ERROR: same build ID in nonidentical files!"
+     echo >&2 "        $file"
+     echo >&2 "   and  $other"
+-    exit 2
+   fi
+ }
+ 
+--- rpm-4.9.1.3/tools//debugedit.c~	2012-04-03 06:54:11.000000000 -0700
++++ rpm-4.9.1.3/tools/debugedit.c	2013-01-03 17:37:55.922513604 -0800
+@@ -669,7 +669,7 @@
+       if (shrank > 0)
+ 	{
+ 	  if (--shrank == 0)
+-	    error (EXIT_FAILURE, 0,
++	    error (EXIT_SUCCESS, 0,
+ 		   "canonicalization unexpectedly shrank by one character");
+ 	  else
+ 	    {
+--- rpm-4.9.1.3/scripts/find-debuginfo.sh~	2012-12-31 11:03:27.000000000 -0800
++++ rpm-4.9.1.3/scripts/find-debuginfo.sh	2013-01-07 18:04:03.379580038 -0800
+@@ -212,7 +212,7 @@
+ 			      -i -l "$SOURCEFILE" "$f") || exit
+   if [ -z "$id" ]; then
+     echo >&2 "*** ${strict_error}: No build ID note found in $f"
+-    $strict && exit 2
++ 
+   fi
+ 
+   [ -x /usr/bin/gdb-add-index ] && /usr/bin/gdb-add-index "$f" > /dev/null 2>&1

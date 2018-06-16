@@ -1,0 +1,20 @@
+--- a/build/pack.c	2017-09-07 11:58:21.845702679 -0700
++++ b/build/pack.c	2017-09-07 11:59:35.010707617 -0700
+@@ -176,16 +176,9 @@
+ {
+     static char hostname[1024];
+     static int oneshot = 0;
+-    struct hostent *hbn;
+ 
+     if (! oneshot) {
+-        (void) gethostname(hostname, sizeof(hostname));
+-	hbn = gethostbyname(hostname);
+-	if (hbn)
+-	    strcpy(hostname, hbn->h_name);
+-	else
+-	    rpmlog(RPMLOG_WARNING,
+-			_("Could not canonicalize hostname: %s\n"), hostname);
++	strncpy(hostname, "localhost", 10);
+ 	oneshot = 1;
+     }
+     return(hostname);
