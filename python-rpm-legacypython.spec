@@ -4,7 +4,7 @@
 
 Name:           python-rpm-legacypython
 Version:        4.12.0.2
-Release:        75
+Release:        76
 License:        LGPL-2.1
 Summary:        The RPM package management system
 Url:            http://rpm.org/
